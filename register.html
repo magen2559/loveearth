@@ -4,25 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Love Earth — Sign In</title>
-    <meta name="description"
-        content="Sign in to your Love Earth onboarding dashboard. Welcome back to your special place.">
-
+    <title>Join Love Earth — Sustainability Starts Here</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-
     <!-- Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js" defer></script>
 
     <style>
-        /* ──────────────────────────────────────────────
-           CSS VARIABLES — Love Earth Palette
-        ────────────────────────────────────────────── */
         :root {
             /* Greens extracted from the Love Earth logo */
             --green-dark: #007A4D;
@@ -100,11 +93,11 @@
             padding: 40px;
             position: relative;
             z-index: 2;
-            background: radial-gradient(circle at 100% 0%, rgba(91, 191, 33, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 0% 100%, rgba(0, 122, 77, 0.03) 0%, transparent 50%);
+            background: radial-gradient(circle at 0% 0%, rgba(91, 191, 33, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(0, 122, 77, 0.03) 0%, transparent 50%);
         }
 
-        /* Ambient Orbs */
+        /* Ambient Orbs for depth */
         .ambient-orb {
             position: absolute;
             width: 600px;
@@ -119,18 +112,18 @@
         .orb-1 {
             background: rgba(91, 191, 33, 0.1);
             top: -200px;
-            right: -200px;
+            left: -200px;
         }
 
         .orb-2 {
             background: rgba(0, 122, 77, 0.08);
             bottom: -200px;
-            left: -200px;
+            right: -200px;
         }
 
         .form-container {
             width: 100%;
-            max-width: 440px;
+            max-width: 460px;
             padding: 48px;
             background: rgba(255, 255, 255, 0.45);
             backdrop-filter: blur(32px) saturate(180%);
@@ -142,8 +135,10 @@
                 inset 0 0 0 1px rgba(255, 255, 255, 0.4);
             position: relative;
             opacity: 0;
+            /* Animated by GSAP */
         }
 
+        /* Glass highlight effect */
         .form-container::after {
             content: '';
             position: absolute;
@@ -181,10 +176,9 @@
             justify-content: center;
         }
 
-        .brand-logo-img {
+        .brand-logo img {
             height: 42px;
             width: auto;
-            object-fit: contain;
         }
 
         .brand-logo span {
@@ -197,15 +191,15 @@
         /* Headings */
         .form-heading {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
         }
 
-        .form-heading h1 {
-            font-size: 2.8rem;
+        .form-heading h2 {
+            font-size: 2.4rem;
             font-weight: 800;
-            line-height: 1;
             color: var(--charcoal);
             letter-spacing: -0.05em;
+            line-height: 1;
             margin-bottom: 12px;
         }
 
@@ -215,15 +209,58 @@
             font-weight: 400;
         }
 
+        /* Nav Tabs */
+        .nav-tabs {
+            display: flex;
+            background: rgba(0, 122, 77, 0.05);
+            padding: 6px;
+            border-radius: 20px;
+            margin-bottom: 32px;
+            gap: 4px;
+            border: 1px solid rgba(0, 122, 77, 0.05);
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 12px 0;
+            border-radius: 16px;
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .nav-tab.active {
+            background: var(--white);
+            color: var(--green-dark);
+            box-shadow: 0 4px 15px rgba(0, 122, 77, 0.1);
+        }
+
         /* Form Groups */
         .form-group {
             margin-bottom: 22px;
         }
 
+        .form-label {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: 8px;
+            margin-left: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.6;
+        }
+
         .form-input {
             width: 100%;
-            padding: 18px 22px;
-            border-radius: 20px;
+            padding: 16px 20px;
+            border-radius: 18px;
             border: 1.5px solid rgba(0, 122, 77, 0.08);
             background: rgba(255, 255, 255, 0.6);
             font-family: inherit;
@@ -233,11 +270,6 @@
             outline: none;
         }
 
-        .form-input::placeholder {
-            color: var(--grey-400);
-            font-weight: 400;
-        }
-
         .form-input:focus {
             border-color: var(--green-vibrant);
             background: var(--white);
@@ -245,97 +277,63 @@
             transform: translateY(-2px);
         }
 
-        /* Sub-actions Row */
-        .sub-actions {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 32px;
-            padding: 0 4px;
-        }
-
-        .remember-me {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            font-weight: 600;
-            user-select: none;
-        }
-
-        .remember-me input[type="checkbox"] {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 22px;
-            height: 22px;
-            border: 2px solid var(--grey-200);
-            border-radius: 8px;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.2s ease;
-            background: white;
-        }
-
-        .remember-me input[type="checkbox"]:checked {
-            background: var(--green-vibrant);
-            border-color: var(--green-vibrant);
-        }
-
-        .remember-me input[type="checkbox"]:checked::after {
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 0.85rem;
-            font-weight: 800;
-        }
-
-        .forgot-link {
-            font-size: 0.95rem;
-            color: var(--green-mid);
-            font-weight: 700;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .forgot-link:hover {
-            color: var(--green-dark);
-            text-decoration: underline;
-        }
-
-        /* Sign In Button */
-        .btn-signin {
+        /* Buttons */
+        .btn-register {
             width: 100%;
             padding: 18px 28px;
             border: none;
             border-radius: 20px;
             background: var(--charcoal);
             color: var(--white);
-            font-weight: 700;
+            font-family: inherit;
             font-size: 1.1rem;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
+            margin-top: 15px;
             position: relative;
             overflow: hidden;
         }
 
-        .btn-signin:hover {
+        .btn-register:hover {
             background: #000;
             transform: translateY(-4px);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
         }
 
-        .btn-signin.loading {
+        .btn-register.loading {
             opacity: 0.7;
             pointer-events: none;
+        }
+
+        .btn-register .icon-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s;
+        }
+
+        .btn-register:hover .icon-box {
+            transform: translateX(4px);
+        }
+
+        /* Error Message */
+        .error-msg {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #991B1B;
+            border-radius: var(--radius-xs);
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 500;
+            align-items: center;
+            gap: 8px;
         }
 
         /* Footer */
@@ -351,16 +349,29 @@
             color: var(--green-vibrant);
             font-weight: 800;
             text-decoration: none;
+            position: relative;
         }
 
-        .form-footer a:hover {
-            text-decoration: underline;
+        .form-footer a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--green-vibrant);
+            transform: scaleX(0.3);
+            transform-origin: left;
+            transition: transform 0.3s;
+        }
+
+        .form-footer a:hover::after {
+            transform: scaleX(1);
         }
 
         /* ──────────────────────────────────────────────
            RIGHT SIDE — VISUAL PANEL
         ────────────────────────────────────────────── */
-
         .visual-side::before {
             content: '';
             position: absolute;
@@ -404,6 +415,67 @@
             pointer-events: none;
         }
 
+        /* ──────────────────────────────────────────────
+           ANIMATIONS
+        ────────────────────────────────────────────── */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes floatSlow {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-12px) rotate(4deg);
+            }
+        }
+
+        @keyframes floatCard {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
         @media (max-width: 1100px) {
             .visual-side {
                 display: none;
@@ -417,130 +489,6 @@
         .form-container>* {
             opacity: 0;
         }
-
-        /* Error Message */
-        .error-msg {
-            background: #FEF2F2;
-            border: 1px solid #FECACA;
-            color: #991B1B;
-            border-radius: var(--radius-xs);
-            padding: 12px 16px;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            display: none;
-            font-weight: 500;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Footer */
-        .form-footer {
-            text-align: center;
-            margin-top: 32px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            font-weight: 400;
-        }
-
-        .form-footer a {
-            color: var(--green-vibrant);
-            font-weight: 700;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .form-footer a:hover {
-            color: var(--green-dark);
-        }
-
-        /* Entry animations */
-        .visual-card {
-            opacity: 0;
-        }
-
-        /* ──────────────────────────────────────────────
-           TOASTS
-        ────────────────────────────────────────────── */
-        .toast-container {
-            position: fixed;
-            bottom: 32px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .toast {
-            background: var(--charcoal);
-            color: white;
-            padding: 16px 24px;
-            border-radius: var(--radius-pill);
-            font-weight: 500;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .toast.success {
-            border-left: 4px solid var(--green-vibrant);
-        }
-
-        .toast.error {
-            background: #EF4444;
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .toast-fadeout {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s;
-        }
-
-        /* ──────────────────────────────────────────────
-           RESPONSIVE — MOBILE
-        ────────────────────────────────────────────── */
-        @media (max-width: 1100px) {
-            .visual-side {
-                display: none;
-            }
-
-            .form-side {
-                padding: 40px 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .form-side {
-                padding: 24px 20px;
-            }
-
-            .form-heading h1 {
-                font-size: 1.9rem;
-            }
-
-            .form-input {
-                padding: 14px 16px;
-            }
-
-            .btn-signin {
-                padding: 14px 24px;
-            }
-        }
     </style>
 </head>
 
@@ -550,79 +498,102 @@
 
     <div class="split-screen">
         <div class="form-side">
-            <!-- Lighting Orbs -->
+            <!-- Orbs for lighting -->
             <div class="ambient-orb orb-1"></div>
             <div class="ambient-orb orb-2"></div>
 
             <div class="form-container">
                 <!-- Brand -->
                 <div class="brand-logo">
-                    <img src="public/loveearth_logo-removebg-preview.png" alt="Love Earth Logo" class="brand-logo-img">
+                    <img src="public/loveearth_logo-removebg-preview.png" alt="Love Earth Logo">
                     <span>Love Earth</span>
                 </div>
 
                 <!-- Headings -->
                 <div class="form-heading">
-                    <h1>Holla,<br>Welcome Back</h1>
-                    <p class="subtitle">Enter your details to access your special place</p>
+                    <h2>Join the mission</h2>
+                    <p class="subtitle">Securely set up your sustainable dashboard</p>
                 </div>
 
-                <!-- Error -->
+                <div class="nav-tabs">
+                    <button class="nav-tab active" id="tab-employee" onclick="switchTab('employee')">Employee</button>
+                    <button class="nav-tab" id="tab-hr" onclick="switchTab('hr')">HR Admin</button>
+                </div>
+
                 <div id="error-msg" class="error-msg"></div>
 
-                <!-- Email -->
-                <div class="form-group">
-                    <input id="email-input" class="form-input" type="email" placeholder="yourname@company.com"
-                        autocomplete="email">
+                <!-- Employee / Client Form -->
+                <div id="form-employee" class="tab-content active">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input id="emp-name" class="form-input" type="text" placeholder="Alice Wonderland">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input id="emp-email" class="form-input" type="email" placeholder="alice@company.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input id="emp-password" class="form-input" type="password" placeholder="••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Preferred Start</label>
+                        <input id="emp-date" class="form-input" type="date">
+                    </div>
+                    <button id="btn-employee" class="btn-register" onclick="handleRegister('employee')">
+                        <span>Register Account</span>
+                        <div class="icon-box"><i class="ph-bold ph-arrow-right"></i></div>
+                    </button>
                 </div>
 
-                <!-- Password -->
-                <div class="form-group">
-                    <input id="password-input" class="form-input" type="password" placeholder="••••••••••••">
+                <!-- HR Form -->
+                <div id="form-hr" class="tab-content">
+                    <div class="form-group">
+                        <label class="form-label">Admin Name</label>
+                        <input id="hr-name" class="form-input" type="text" placeholder="Ivy Adams">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Official Email</label>
+                        <input id="hr-email" class="form-input" type="email" placeholder="ivy@company.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Security Key</label>
+                        <input id="hr-password" class="form-input" type="password" placeholder="••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Access Code</label>
+                        <input id="hr-code" class="form-input" type="password" placeholder="Auth Code">
+                        <small
+                            style="color:var(--text-muted);display:block;margin-top:6px;font-size:0.75rem;opacity:0.7">Hint:
+                            HR2026</small>
+                    </div>
+                    <button id="btn-hr" class="btn-register" onclick="handleRegister('hr')">
+                        <span>Register as HR</span>
+                        <div class="icon-box"><i class="ph-bold ph-shield-check"></i></div>
+                    </button>
                 </div>
 
-                <!-- Sub-actions -->
-                <div class="sub-actions">
-                    <label class="remember-me">
-                        <input type="checkbox" checked>
-                        Stay signed in
-                    </label>
-                    <a href="#" class="forgot-link">Forgot?</a>
-                </div>
-
-                <!-- Sign In Button -->
-                <button id="login-btn" class="btn-signin" onclick="handleLogin()">
-                    <span>Sign In</span>
-                    <i class="ph-bold ph-arrow-right"></i>
-                </button>
-
-                <!-- Footer -->
-                <p class="form-footer">
-                    New here? <a href="register.html">Create an Account</a>
-                </p>
-
+                <p class="form-footer">Already have an account? <a href="index.html">Sign In</a></p>
             </div>
         </div>
 
         <div class="visual-side">
-            <div class="leaf-float" style="top: 15%; left: 10%; width: 180px; height: 180px;"></div>
-            <div class="leaf-float" style="bottom: 10%; right: 5%; width: 220px; height: 220px;"></div>
+            <div class="leaf-float" style="top: 10%; right: 10%; width: 200px; height: 200px;"></div>
+            <div class="leaf-float" style="bottom: 5%; left: 5%; width: 150px; height: 150px;"></div>
 
             <div class="visual-card">
                 <div
                     style="background: rgba(255,255,255,0.2); width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                    <i class="ph-fill ph-planet" style="font-size: 3rem; color: white;"></i>
+                    <i class="ph-fill ph-leaf" style="font-size: 3rem; color: white;"></i>
                 </div>
-                <p>Nurture Earth</p>
+                <p>Rooted in Future</p>
                 <div style="width: 60%; height: 2px; background: rgba(255,255,255,0.2); border-radius: 1px;"></div>
             </div>
         </div>
     </div>
 
-    <div id="toast-container" class="toast-container"></div>
-
     <script>
-        // GSAP Animations
+        // GSAP Entrance Animations
         window.addEventListener('load', () => {
             const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
 
@@ -657,7 +628,7 @@
                     duration: 2
                 }, 0.5);
 
-            // Floating movement
+            // Floating movement for visual elements
             gsap.to('.visual-card', {
                 y: -20,
                 duration: 3,
@@ -676,7 +647,7 @@
                 ease: 'sine.inOut'
             });
 
-            // Mouse parallax
+            // Mouse parallax effect
             document.addEventListener('mousemove', (e) => {
                 const x = (e.clientX / window.innerWidth - 0.5) * 40;
                 const y = (e.clientY / window.innerHeight - 0.5) * 40;
@@ -691,112 +662,93 @@
             });
         });
 
-        // Check if already logged in
-        window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(async () => {
-                const { data: { session } } = await db.auth.getSession();
-                if (session && session.user) {
-                    const { data } = await db.from('employees').select('role').eq('auth_uid', session.user.id).single();
-                    if (data && data.role) {
-                        redirect(data.role);
-                    }
-                }
-            }, 500);
-
-            document.getElementById('password-input').addEventListener('keydown', e => {
-                if (e.key === 'Enter') handleLogin();
-            });
-        });
-
-        async function handleLogin() {
-            const email = document.getElementById('email-input').value.trim().toLowerCase();
-            const password = document.getElementById('password-input').value;
-            const errorEl = document.getElementById('error-msg');
-            const btn = document.getElementById('login-btn');
-
-            if (!email || !password) {
-                showError('Please enter both email and password.');
-                return;
-            }
-
-            btn.classList.add('loading');
-            btn.querySelector('span').textContent = 'Signing in...';
-            errorEl.style.display = 'none';
-
-            try {
-                // 1. Sign into Supabase Auth
-                const { data: authData, error: authError } = await db.auth.signInWithPassword({
-                    email,
-                    password
-                });
-
-                if (authError || !authData.user) {
-                    throw new Error('Invalid email or password.');
-                }
-
-                // 2. Fetch role for smart routing
-                const { data: profileData, error: profileError } = await db
-                    .from('employees')
-                    .select('role, name')
-                    .eq('auth_uid', authData.user.id)
-                    .single();
-
-                btn.classList.remove('loading');
-                btn.querySelector('span').textContent = 'Sign In';
-
-                if (profileError || !profileData) {
-                    const { data: fallbackData, error: fallbackError } = await db
-                        .from('employees')
-                        .select('role, name')
-                        .eq('email', email)
-                        .single();
-
-                    if (fallbackError || !fallbackData) {
-                        throw new Error('Your user profile could not be found. Please contact HR.');
-                    } else {
-                        showToast('Welcome back, ' + fallbackData.name + '! 🎉', 'success');
-                        setTimeout(() => redirect(fallbackData.role), 800);
-                        return;
-                    }
-                }
-
-                showToast('Welcome back, ' + profileData.name + '! 🎉', 'success');
-                setTimeout(() => redirect(profileData.role), 800);
-
-            } catch (err) {
-                btn.classList.remove('loading');
-                btn.querySelector('span').textContent = 'Sign In';
-                showError(err.message || 'Connection error. Please try again.');
-            }
+        function switchTab(tab) {
+            document.getElementById('tab-employee').classList.toggle('active', tab === 'employee');
+            document.getElementById('tab-hr').classList.toggle('active', tab === 'hr');
+            document.getElementById('form-employee').classList.toggle('active', tab === 'employee');
+            document.getElementById('form-hr').classList.toggle('active', tab === 'hr');
+            document.getElementById('error-msg').style.display = 'none';
         }
 
         function showError(msg) {
             const el = document.getElementById('error-msg');
             el.innerHTML = `<i class="ph-fill ph-warning-circle"></i> ${msg}`;
-            el.style.display = 'flex';
+            el.style.display = 'block';
         }
 
-        function redirect(role) {
-            if (role === 'hr') {
-                window.location.href = 'admin.html';
-            } else {
-                window.location.href = 'employee.html';
+        async function handleRegister(role) {
+            const prefix = role === 'hr' ? 'hr' : 'emp';
+            const name = document.getElementById(`${prefix}-name`).value.trim();
+            const email = document.getElementById(`${prefix}-email`).value.trim().toLowerCase();
+            const password = document.getElementById(`${prefix}-password`).value;
+            const btn = document.getElementById(`btn-${role}`);
+            const errorEl = document.getElementById('error-msg');
+
+            errorEl.style.display = 'none';
+
+            if (!name || !email || !password) {
+                showError('Please fill in all required fields.');
+                return;
             }
-        }
 
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icon = type === 'success'
-                ? '<i class="ph-fill ph-check-circle" style="color: var(--green-vibrant); font-size: 1.25rem;"></i>'
-                : '<i class="ph-fill ph-warning-circle" style="font-size: 1.25rem;"></i>';
-            toast.innerHTML = `${icon} <span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.add('toast-fadeout');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            let startDate = new Date().toISOString().split('T')[0];
+            if (role === 'employee') {
+                startDate = document.getElementById('emp-date').value;
+                if (!startDate) {
+                    showError('Please select a start date.');
+                    return;
+                }
+            } else if (role === 'hr') {
+                const code = document.getElementById('hr-code').value;
+                if (code !== 'HR2026') {
+                    showError('Invalid HR Access Code.');
+                    return;
+                }
+            }
+
+            btn.classList.add('loading');
+            const originalText = btn.querySelector('span').textContent;
+            btn.querySelector('span').textContent = 'Creating account...';
+
+            try {
+                // 1. Sign up with Supabase Auth
+                const { data: authData, error: authError } = await db.auth.signUp({
+                    email,
+                    password
+                });
+
+                if (authError) throw authError;
+
+                if (!authData.user) {
+                    throw new Error('Could not create user account.');
+                }
+
+                // 2. Insert into public.employees table linking auth.uid()
+                const { error: dbError } = await db.from('employees').insert([
+                    {
+                        auth_uid: authData.user.id,
+                        name: name,
+                        email: email,
+                        role: role,
+                        start_date: startDate
+                    }
+                ]);
+
+                if (dbError) {
+                    // Note: In production we'd want to handle cleanup of auth.user
+                    console.error('DB Insert Error:', dbError);
+                    throw new Error('Account created but failed to link profile. Email may already be in use.');
+                }
+
+                alert('Registration successful! You may now log in.');
+                window.location.href = 'index.html';
+
+            } catch (err) {
+                console.error(err);
+                btn.classList.remove('loading');
+                btn.querySelector('span').textContent = originalText;
+                showError(err.message || 'An error occurred during registration.');
+            }
         }
     </script>
 </body>
