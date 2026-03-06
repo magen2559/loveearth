@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnboardPro — New Hire Onboarding System</title>
+  <meta name="description" content="Streamlined 7-day new hire onboarding system">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js" defer></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #A855F7 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-wrap {
+      width: 100%; max-width: 460px;
+    }
+    .login-brand {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .login-brand .brand-icon {
+      width: 72px; height: 72px;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 22px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 16px;
+    }
+    .login-brand h1 {
+      font-size: 2rem; font-weight: 800;
+      color: white;
+    }
+    .login-brand p {
+      color: rgba(255,255,255,0.75);
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+    .login-card { padding: 36px; }
+    .login-card h2 {
+      font-size: 1.4rem; font-weight: 700;
+      margin-bottom: 8px; color: var(--text);
+    }
+    .login-card .subtitle {
+      color: var(--text-2); font-size: 0.9rem; margin-bottom: 28px;
+    }
+    .demo-accounts {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 24px;
+    }
+    .demo-accounts h4 {
+      font-size: 0.8rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--text-2); margin-bottom: 10px;
+    }
+    .demo-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .demo-item:last-child { border-bottom: none; }
+    .demo-item .email { font-weight: 600; color: var(--primary); }
+    .demo-item .badge-demo { font-size: 0.75rem; }
+    .use-demo {
+      font-size: 0.78rem; color: var(--primary);
+      cursor: pointer; text-decoration: underline;
+    }
+    .login-footer {
+      text-align: center; margin-top: 20px;
+      font-size: 0.82rem; color: rgba(255,255,255,0.7);
+    }
+    .error-msg {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      color: #991B1B;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 0.875rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+    #login-btn { width: 100%; justify-content: center; }
+    #login-btn.loading { opacity: 0.7; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-brand">
+      <div class="brand-icon">🚀</div>
+      <h1>OnboardPro</h1>
+      <p>New Hire Onboarding System</p>
+    </div>
+
+    <div class="card login-card">
+      <h2>Welcome! Sign In</h2>
+      <p class="subtitle">Enter your email to access your onboarding portal.</p>
+
+      <div class="demo-accounts">
+        <h4>Demo Accounts</h4>
+        <div class="demo-item">
+          <span class="email">alice@company.com</span>
+          <span class="badge badge-primary badge-demo">New Hire</span>
+          <span class="use-demo" onclick="useDemo('alice@company.com')">Use</span>
+        </div>
+        <div class="demo-item">
+          <span class="email">bob@company.com</span>
+          <span class="badge badge-primary badge-demo">New Hire</span>
+          <span class="use-demo" onclick="useDemo('bob@company.com')">Use</span>
+        </div>
+        <div class="demo-item">
+          <span class="email">hr@company.com</span>
+          <span class="badge badge-success badge-demo">HR Admin</span>
+          <span class="use-demo" onclick="useDemo('hr@company.com')">Use</span>
+        </div>
+      </div>
+
+      <div id="error-msg" class="error-msg"></div>
+
+      <div class="form-group">
+        <label class="form-label" for="email-input">Email Address</label>
+        <input id="email-input" class="form-input" type="email"
+          placeholder="yourname@company.com" autocomplete="email">
+      </div>
+
+      <button id="login-btn" class="btn btn-primary btn-lg" onclick="handleLogin()">
+        <span>Sign In</span> <span>→</span>
+      </button>
+    </div>
+
+    <p class="login-footer">🔒 Prototype mode — no password required</p>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script>
+    // Check if already logged in
+    window.addEventListener('DOMContentLoaded', () => {
+      const user = getSession();
+      if (user) {
+        redirect(user.role);
+      }
+      document.getElementById('email-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') handleLogin();
+      });
+    });
+
+    function useDemo(email) {
+      document.getElementById('email-input').value = email;
+    }
+
+    async function handleLogin() {
+      const email = document.getElementById('email-input').value.trim().toLowerCase();
+      const errorEl = document.getElementById('error-msg');
+      const btn = document.getElementById('login-btn');
+
+      if (!email) {
+        showError('Please enter your email address.');
+        return;
+      }
+
+      btn.classList.add('loading');
+      btn.querySelector('span').textContent = 'Signing in...';
+      errorEl.style.display = 'none';
+
+      const { data, error } = await db
+        .from('employees')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      btn.classList.remove('loading');
+      btn.querySelector('span').textContent = 'Sign In';
+
+      if (error || !data) {
+        showError('Email not found. Please check the demo accounts above or contact HR.');
+        return;
+      }
+
+      setSession(data);
+      showToast('Welcome, ' + data.name + '! 🎉', 'success');
+      setTimeout(() => redirect(data.role), 800);
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function redirect(role) {
+      if (role === 'hr') {
+        window.location.href = 'admin.html';
+      } else {
+        window.location.href = 'employee.html';
+      }
+    }
+  </script>
+</body>
+</html>

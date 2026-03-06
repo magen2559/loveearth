@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Admin — OnboardPro</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js" defer></script>
+    <style>
+        .page-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 20px;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--text-2);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .stat-card.purple .stat-value {
+            color: var(--primary);
+        }
+
+        .stat-card.green .stat-value {
+            color: var(--success);
+        }
+
+        .stat-card.amber .stat-value {
+            color: var(--warning);
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .toolbar .search-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .toolbar .search-wrap input {
+            padding-left: 36px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-3);
+            pointer-events: none;
+        }
+
+        /* Employees Table */
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .mini-progress {
+            background: var(--surface-2);
+            border-radius: 100px;
+            height: 6px;
+            width: 100px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .mini-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 100px;
+        }
+
+        /* Detail Modal */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .detail-stat {
+            background: var(--surface-2);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+        }
+
+        .detail-stat-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--text-2);
+            margin-bottom: 4px;
+        }
+
+        .detail-stat-value {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .task-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .task-row:last-child {
+            border-bottom: none;
+        }
+
+        .task-check {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .task-check.done {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .task-check.pending {
+            background: #F3F4F6;
+            color: var(--text-3);
+        }
+
+        .task-row-info {
+            flex: 1;
+        }
+
+        .task-row-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .task-row-meta {
+            font-size: 0.78rem;
+            color: var(--text-2);
+            margin-top: 2px;
+        }
+
+        .asset-detail {
+            background: var(--surface-2);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin-top: 16px;
+        }
+
+        .asset-detail h4 {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--text-2);
+            margin-bottom: 10px;
+        }
+
+        .asset-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.88rem;
+        }
+
+        .asset-item:last-child {
+            border-bottom: none;
+        }
+
+        .asset-tag {
+            font-family: monospace;
+            background: #EEF2FF;
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.82rem;
+        }
+
+        /* Task Config Tab */
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .config-table th {
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--text-2);
+            background: var(--surface-2);
+        }
+
+        .config-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .config-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .editable-cell input,
+        .editable-cell textarea {
+            border: 1.5px dashed var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            width: 100%;
+            background: transparent;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .editable-cell input:focus,
+        .editable-cell textarea:focus {
+            background: white;
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .toggle-active {
+            cursor: pointer;
+        }
+
+        .save-config-btn {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            box-shadow: var(--shadow-lg);
+            display: none;
+            z-index: 500;
+        }
+
+        .save-config-btn.visible {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <a href="index.html" class="app-logo">
+            <div class="logo-icon">🚀</div>
+            OnboardPro
+        </a>
+        <div class="header-right">
+            <div class="user-badge">
+                <div class="user-avatar" style="background:linear-gradient(135deg,#10B981,#34D399)">HR</div>
+                <span id="header-name">HR Admin</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="page-content">
+        <div style="margin-bottom:24px">
+            <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:4px">HR Dashboard</h1>
+            <p style="color:var(--text-2);font-size:0.95rem">Track employee onboarding progress and manage tasks</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row" id="stats-row">
+            <div class="stat-card purple">
+                <div class="stat-label">Total Employees</div>
+                <div class="stat-value" id="stat-total">–</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-label">Fully Complete</div>
+                <div class="stat-value" id="stat-complete">–</div>
+            </div>
+            <div class="stat-card amber">
+                <div class="stat-label">In Progress</div>
+                <div class="stat-value" id="stat-progress">–</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Not Started</div>
+                <div class="stat-value" id="stat-none">–</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" id="tab-tracker" onclick="switchTab('tracker')">👥 Onboarding
+                Tracker</button>
+            <button class="tab-btn" id="tab-config" onclick="switchTab('config')">⚙️ Task Configuration</button>
+        </div>
+
+        <!-- Tracker Panel -->
+        <div id="panel-tracker">
+            <div class="toolbar">
+                <div class="search-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input class="form-input" type="text" id="search-input" placeholder="Search by name..."
+                        oninput="filterTable()">
+                </div>
+                <select class="form-select" id="filter-status" style="width:auto" onchange="filterTable()">
+                    <option value="">All Statuses</option>
+                    <option value="complete">✅ Complete</option>
+                    <option value="progress">🔄 In Progress</option>
+                    <option value="none">⏳ Not Started</option>
+                </select>
+            </div>
+            <div class="table-card" id="tracker-table-wrap">
+                <div class="loading-center">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Config Panel -->
+        <div id="panel-config" style="display:none">
+            <div class="table-card" style="overflow-x:auto">
+                <table class="config-table" id="config-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Task Title</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Active</th>
+                            <th>Order</th>
+                        </tr>
+                    </thead>
+                    <tbody id="config-tbody">
+                        <tr>
+                            <td colspan="6">
+                                <div class="loading-center">
+                                    <div class="spinner"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="color:var(--text-2);font-size:0.82rem;margin-top:12px">💡 Click any cell to edit. HR can add,
+                remove or reorder tasks without touching any code.</p>
+        </div>
+    </main>
+
+    <!-- Save Config Button -->
+    <button class="btn btn-primary save-config-btn" id="save-config-btn" onclick="saveConfig()">
+        💾 Save Task Changes
+    </button>
+
+    <!-- Employee Detail Modal -->
+    <div class="modal-overlay" id="detail-modal" onclick="closeDetailModal(event)">
+        <div class="modal" style="max-width:680px">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="detail-name"></h2>
+                    <p style="font-size:0.85rem;color:var(--text-2);margin-top:2px" id="detail-meta"></p>
+                </div>
+                <button class="modal-close" onclick="closeDetailDirect()">✕</button>
+            </div>
+            <div class="modal-body" id="detail-body"></div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script>
+        let allEmployees = [];
+        let allTasks = [];
+        let allEmpTasks = [];
+        let allAssets = [];
+        let configDirty = false;
+        let currentHR = null;
+
+        async function init() {
+            currentHR = getSession();
+            if (!currentHR) { window.location.href = 'index.html'; return; }
+            if (currentHR.role !== 'hr') { window.location.href = 'employee.html'; return; }
+            document.getElementById('header-name').textContent = currentHR.name;
+            await loadAll();
+        }
+
+        async function loadAll() {
+            const [{ data: emps }, { data: tasks }, { data: empTasks }, { data: assets }] = await Promise.all([
+                db.from('employees').select('*').eq('role', 'employee').order('name'),
+                db.from('onboarding_tasks').select('*').order('sort_order'),
+                db.from('employee_tasks').select('*'),
+                db.from('asset_records').select('*')
+            ]);
+            allEmployees = emps || [];
+            allTasks = tasks || [];
+            allEmpTasks = empTasks || [];
+            allAssets = assets || [];
+            renderStats();
+            renderTracker();
+            renderConfig();
+        }
+
+        function getEmpProgress(empId) {
+            const activeTasks = allTasks.filter(t => t.is_active);
+            const done = allEmpTasks.filter(t => t.employee_id === empId && t.is_completed).length;
+            return { done, total: activeTasks.length };
+        }
+
+        function renderStats() {
+            const total = allEmployees.length;
+            let complete = 0, inProgress = 0, none = 0;
+            allEmployees.forEach(e => {
+                const { done, total: tot } = getEmpProgress(e.id);
+                if (done === tot && tot > 0) complete++;
+                else if (done > 0) inProgress++;
+                else none++;
+            });
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-complete').textContent = complete;
+            document.getElementById('stat-progress').textContent = inProgress;
+            document.getElementById('stat-none').textContent = none;
+        }
+
+        function renderTracker(filter = '') {
+            const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+            const statusFilter = document.getElementById('filter-status')?.value || '';
+
+            let rows = allEmployees.filter(e => {
+                const { done, total } = getEmpProgress(e.id);
+                const matchSearch = !search || e.name.toLowerCase().includes(search);
+                let matchStatus = true;
+                if (statusFilter === 'complete') matchStatus = done === total && total > 0;
+                else if (statusFilter === 'progress') matchStatus = done > 0 && done < total;
+                else if (statusFilter === 'none') matchStatus = done === 0;
+                return matchSearch && matchStatus;
+            });
+
+            if (rows.length === 0) {
+                document.getElementById('tracker-table-wrap').innerHTML = `
+          <div class="empty-state"><div class="empty-state-icon">🔍</div><h3>No employees found</h3><p>Try adjusting your search or filter.</p></div>`;
+                return;
+            }
+
+            let html = `<table class="data-table">
+        <thead><tr>
+          <th>Employee</th><th>Start Date</th><th>Progress</th><th>Status</th>
+        </tr></thead><tbody>`;
+
+            rows.forEach(e => {
+                const { done, total } = getEmpProgress(e.id);
+                const pct = total ? Math.round((done / total) * 100) : 0;
+                let badge, status;
+                if (done === total && total > 0) { badge = 'badge-success'; status = '✅ Complete'; }
+                else if (done > 0) { badge = 'badge-warning'; status = '🔄 In Progress'; }
+                else { badge = 'badge-gray'; status = '⏳ Not Started'; }
+
+                html += `<tr onclick="openDetail('${e.id}')">
+          <td><b>${e.name}</b><br><small style="color:var(--text-3)">${e.email}</small></td>
+          <td>${formatDate(e.start_date)}</td>
+          <td>
+            <div class="mini-progress"><div class="mini-progress-bar" style="width:${pct}%"></div></div>
+            <small>${done}/${total} tasks</small>
+          </td>
+          <td><span class="badge ${badge}">${status}</span></td>
+        </tr>`;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('tracker-table-wrap').innerHTML = html;
+        }
+
+        function filterTable() { renderTracker(); }
+
+        function openDetail(empId) {
+            const emp = allEmployees.find(e => e.id === empId);
+            if (!emp) return;
+            const { done, total } = getEmpProgress(emp.id);
+            const pct = total ? Math.round((done / total) * 100) : 0;
+
+            document.getElementById('detail-name').textContent = emp.name;
+            document.getElementById('detail-meta').textContent = `${emp.email} · Started ${formatDate(emp.start_date)}`;
+
+            const empAssets = allAssets.filter(a => a.employee_id === empId);
+
+            let html = `
+        <div class="detail-grid">
+          <div class="detail-stat"><div class="detail-stat-label">Progress</div><div class="detail-stat-value">${pct}%</div></div>
+          <div class="detail-stat"><div class="detail-stat-label">Tasks Done</div><div class="detail-stat-value">${done} / ${total}</div></div>
+        </div>
+        <div class="progress-wrap" style="margin-bottom:24px"><div class="progress-bar" style="width:${pct}%"></div></div>
+        <h3 style="font-size:0.9rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);margin-bottom:12px">Task Breakdown</h3>`;
+
+            allTasks.filter(t => t.is_active).forEach(task => {
+                const rec = allEmpTasks.find(t => t.employee_id === empId && t.task_id === task.id);
+                const done = rec?.is_completed;
+                html += `<div class="task-row">
+          <div class="task-check ${done ? 'done' : 'pending'}">${done ? '✓' : '○'}</div>
+          <div class="task-row-info">
+            <div class="task-row-title">${task.title}</div>
+            <div class="task-row-meta">${done ? '✅ Completed ' + formatDateTime(rec.completed_at) + (rec.notes ? ' · ' + rec.notes : '') : '⏳ Pending'}</div>
+          </div>
+        </div>`;
+            });
+
+            if (empAssets.length > 0) {
+                html += `<div class="asset-detail"><h4>📦 Asset Collection</h4>`;
+                empAssets.forEach(a => {
+                    html += `<div class="asset-item">
+            <span>${a.asset_name}</span>
+            <span>${a.not_applicable ? '<span style="color:var(--text-2)">N/A</span>' : `<span class="asset-tag">${a.asset_tag_code || '—'}</span>`}</span>
+          </div>`;
+                });
+                html += '</div>';
+            }
+
+            html += `<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:20px" onclick="closeDetailDirect()">Close</button>`;
+            document.getElementById('detail-body').innerHTML = html;
+            document.getElementById('detail-modal').classList.add('active');
+        }
+
+        function closeDetailModal(e) { if (e.target === e.currentTarget) closeDetailDirect(); }
+        function closeDetailDirect() { document.getElementById('detail-modal').classList.remove('active'); }
+
+        function renderConfig() {
+            const tbody = document.getElementById('config-tbody');
+            tbody.innerHTML = allTasks.map(task => `
+        <tr data-id="${task.id}">
+          <td>${task.id}</td>
+          <td class="editable-cell"><input type="text" value="${task.title}" onchange="markDirty()"></td>
+          <td class="editable-cell"><textarea rows="2" style="min-height:unset" onchange="markDirty()">${task.description || ''}</textarea></td>
+          <td><span class="badge badge-primary" style="font-size:0.75rem">${task.task_type}</span></td>
+          <td>
+            <label class="toggle-active" title="Toggle active">
+              <input type="checkbox" ${task.is_active ? 'checked' : ''} onchange="markDirty()">
+              ${task.is_active ? '✅ Active' : '❌ Off'}
+            </label>
+          </td>
+          <td class="editable-cell"><input type="number" value="${task.sort_order}" style="width:60px" onchange="markDirty()"></td>
+        </tr>
+      `).join('');
+        }
+
+        function markDirty() {
+            configDirty = true;
+            document.getElementById('save-config-btn').classList.add('visible');
+        }
+
+        async function saveConfig() {
+            const rows = document.querySelectorAll('#config-tbody tr');
+            const updates = [];
+            rows.forEach(row => {
+                const id = parseInt(row.dataset.id);
+                const inputs = row.querySelectorAll('input, textarea');
+                updates.push({
+                    id,
+                    title: inputs[0].value,
+                    description: inputs[1].value,
+                    is_active: inputs[2].checked,
+                    sort_order: parseInt(inputs[3].value) || 0
+                });
+            });
+
+            for (const u of updates) {
+                await db.from('onboarding_tasks').update({
+                    title: u.title,
+                    description: u.description,
+                    is_active: u.is_active,
+                    sort_order: u.sort_order
+                }).eq('id', u.id);
+            }
+
+            configDirty = false;
+            document.getElementById('save-config-btn').classList.remove('visible');
+            showToast('Task configuration saved! ✅', 'success');
+            await loadAll();
+        }
+
+        function switchTab(tab) {
+            document.getElementById('tab-tracker').classList.toggle('active', tab === 'tracker');
+            document.getElementById('tab-config').classList.toggle('active', tab === 'config');
+            document.getElementById('panel-tracker').style.display = tab === 'tracker' ? '' : 'none';
+            document.getElementById('panel-config').style.display = tab === 'config' ? '' : 'none';
+        }
+
+        function logout() { clearSession(); window.location.href = 'index.html'; }
+
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
