@@ -4,7 +4,9 @@
     "description": "Premium onboarding application with GSAP and Supabase",
     "private": true,
     "scripts": {
-        "start": "npx serve ."
+        "start": "npx serve .",
+        "dev": "npx serve .",
+        "build": "echo 'No build step' - serving static files"
     },
     "dependencies": {
         "serve": "^14.2.0"
