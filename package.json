@@ -1,0 +1,12 @@
+{
+    "name": "loveearth-onboarding",
+    "version": "1.0.0",
+    "description": "Premium onboarding application with GSAP and Supabase",
+    "private": true,
+    "scripts": {
+        "start": "npx serve ."
+    },
+    "dependencies": {
+        "serve": "^14.2.0"
+    }
+}
